@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { AuthRequest, AuthResponse, ApiResponse } from '../types';
-import { AuthService } from '../services/authService';
-import { catchAsync } from '../utils/errorHandler';
+import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { AuthRequest, AuthResponse, ApiResponse } from "../types";
+import { AuthService } from "../services/authService";
+import { catchAsync } from "../utils/errorHandler";
 
 export class AuthController {
   private authService: AuthService;
@@ -13,14 +13,14 @@ export class AuthController {
 
   // Генерация JWT токена
   private generateToken = (id: string): string => {
-    const secret = process.env['JWT_SECRET'];
-    
+    const secret = process.env["JWT_SECRET"];
+
     if (!secret) {
-      throw new Error('JWT_SECRET is not defined');
+      throw new Error("JWT_SECRET is not defined");
     }
-    
+
     return jwt.sign({ id }, secret, {
-      expiresIn: '30d'
+      expiresIn: "30d",
     });
   };
 
@@ -35,7 +35,7 @@ export class AuthController {
     if (existingUser) {
       res.status(400).json({
         success: false,
-        message: 'Пользователь с таким email уже существует.'
+        message: "Пользователь с таким email уже существует.",
       });
       return;
     }
@@ -46,16 +46,16 @@ export class AuthController {
     // Генерируем токен
     const token = this.generateToken(user._id);
 
-    res.status(201).json({
+    res.status(201).cookie("token", token, { httpOnly: true }).json({
       success: true,
-      message: 'Пользователь успешно зарегистрирован.',
+      message: "Пользователь успешно зарегистрирован.",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   });
 
@@ -70,7 +70,7 @@ export class AuthController {
     if (!user) {
       res.status(401).json({
         success: false,
-        message: 'Неверные учетные данные.'
+        message: "Неверные учетные данные.",
       });
       return;
     }
@@ -85,18 +85,17 @@ export class AuthController {
       id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
     };
 
     if (user.avatar) {
       (userResponse as any).avatar = user.avatar;
     }
-
-    res.json({
+    res.cookie("token", token, { httpOnly: true }).json({
       success: true,
-      message: 'Вход выполнен успешно.',
+      message: "Вход выполнен успешно.",
       token,
-      user: userResponse
+      user: userResponse,
     });
   });
 
@@ -105,7 +104,7 @@ export class AuthController {
   // @access  Private
   getMe = catchAsync(async (req: AuthRequest, res: Response<ApiResponse>) => {
     const user = await this.authService.findUserById(req.user!._id);
-    
+
     res.json({
       success: true,
       data: {
@@ -114,47 +113,52 @@ export class AuthController {
         email: user!.email,
         role: user!.role,
         avatar: user!.avatar,
-        createdAt: user!.createdAt
-      }
+        createdAt: user!.createdAt,
+      },
     });
   });
 
   // @route   PUT /api/auth/profile
   // @desc    Обновление профиля пользователя
   // @access  Private
-  updateProfile = catchAsync(async (req: AuthRequest, res: Response<ApiResponse>) => {
-    const { name, email } = req.body;
-    const updateData: { name?: string; email?: string } = {};
+  updateProfile = catchAsync(
+    async (req: AuthRequest, res: Response<ApiResponse>) => {
+      const { name, email } = req.body;
+      const updateData: { name?: string; email?: string } = {};
 
-    if (name) updateData.name = name;
-    if (email) updateData.email = email;
+      if (name) updateData.name = name;
+      if (email) updateData.email = email;
 
-    // Проверяем, не занят ли email другим пользователем
-    if (email) {
-      const existingUser = await this.authService.findUserByEmailExcludingId(email, req.user!._id);
-      if (existingUser) {
-        res.status(400).json({
-          success: false,
-          message: 'Пользователь с таким email уже существует.'
-        });
-        return;
+      // Проверяем, не занят ли email другим пользователем
+      if (email) {
+        const existingUser = await this.authService.findUserByEmailExcludingId(
+          email,
+          req.user!._id
+        );
+        if (existingUser) {
+          res.status(400).json({
+            success: false,
+            message: "Пользователь с таким email уже существует.",
+          });
+          return;
+        }
       }
+
+      const user = await this.authService.updateUser(req.user!._id, updateData);
+
+      res.json({
+        success: true,
+        message: "Профиль обновлен успешно.",
+        data: {
+          id: user!._id,
+          name: user!.name,
+          email: user!.email,
+          role: user!.role,
+          avatar: user!.avatar,
+        },
+      });
     }
-
-    const user = await this.authService.updateUser(req.user!._id, updateData);
-
-    res.json({
-      success: true,
-      message: 'Профиль обновлен успешно.',
-      data: {
-        id: user!._id,
-        name: user!.name,
-        email: user!.email,
-        role: user!.role,
-        avatar: user!.avatar
-      }
-    });
-  });
+  );
 
   // @route   POST /api/auth/logout
   // @desc    Выход пользователя
@@ -162,7 +166,7 @@ export class AuthController {
   logout = (_req: Request, res: Response<ApiResponse>) => {
     res.json({
       success: true,
-      message: 'Выход выполнен успешно.'
+      message: "Выход выполнен успешно.",
     });
   };
-} 
+}

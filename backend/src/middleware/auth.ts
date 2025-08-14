@@ -14,6 +14,8 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     // Проверяем заголовок Authorization
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
+    } else if ('token' in req.cookies) {
+      token = req.cookies['token'];
     }
 
     if (!token) {
