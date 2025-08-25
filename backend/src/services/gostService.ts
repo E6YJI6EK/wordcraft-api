@@ -1,319 +1,300 @@
-import { Document, Packer, Paragraph, TextRun } from 'docx';
-import { IDocument } from '../types';
+import {
+  AlignmentType,
+  BorderStyle,
+  Document,
+  ImageRun,
+  Packer,
+  Paragraph,
+  ShadingType,
+  Table,
+  TableCell,
+  TableRow,
+  TextRun,
+  VerticalAlign,
+  WidthType,
+} from "docx";
+import { FormatSettings } from "../config/formatSettings";
+import { ContentBlockType, IContentBlock, IDocument } from "../types";
 
-interface GostSettings {
-  title: any;
-  heading1: any;
-  heading2: any;
-  heading3?: any;
-  body: any;
-  margins: any;
-}
-
-interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  recommendations: string[];
-}
-
-interface GostTemplate {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  settings: GostSettings;
+enum HeadingLevel {
+  HEADING_1= "Heading1",
+  HEADING_2= "Heading2",
+  HEADING_3= "Heading3",
+  HEADING_4= "Heading4",
+  HEADING_5= "Heading5",
+  HEADING_6= "Heading6",
+  TITLE= "Title",
 }
 
 export class GostService {
-  // ГОСТ 7.32-2017 - Отчет о научно-исследовательской работе
-  private gost7322017: GostSettings = {
-    title: {
-      fontSize: 16,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      alignment: 'center',
-      spacing: { after: 300 }
-    },
-    heading1: {
-      fontSize: 16,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      alignment: 'center',
-      spacing: { before: 300, after: 300 }
-    },
-    heading2: {
-      fontSize: 14,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      spacing: { before: 200, after: 200 }
-    },
-    heading3: {
-      fontSize: 14,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      spacing: { before: 150, after: 150 }
-    },
-    body: {
-      fontSize: 14,
-      fontFamily: 'Times New Roman',
-      spacing: { line: 360 }, // 1.5 интервала
-      alignment: 'justify'
-    },
-    margins: {
-      top: 2000, // 20mm
-      bottom: 2000, // 20mm
-      left: 3000, // 30mm
-      right: 1500 // 15mm
-    }
-  };
-
-  // ГОСТ 7.1-2003 - Библиографическая запись
-  private gost712003: GostSettings = {
-    title: {
-      fontSize: 16,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      alignment: 'center',
-      spacing: { after: 300 }
-    },
-    heading1: {
-      fontSize: 16,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      alignment: 'center',
-      spacing: { before: 300, after: 300 }
-    },
-    heading2: {
-      fontSize: 14,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      spacing: { before: 200, after: 200 }
-    },
-    body: {
-      fontSize: 14,
-      fontFamily: 'Times New Roman',
-      spacing: { line: 360 },
-      alignment: 'justify'
-    },
-    margins: {
-      top: 2000,
-      bottom: 2000,
-      left: 3000,
-      right: 1500
-    }
-  };
-
-  // ГОСТ 2.105-95 - Единая система конструкторской документации
-  private gost210595: GostSettings = {
-    title: {
-      fontSize: 16,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      alignment: 'center',
-      spacing: { after: 300 }
-    },
-    heading1: {
-      fontSize: 16,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      alignment: 'center',
-      spacing: { before: 300, after: 300 }
-    },
-    heading2: {
-      fontSize: 14,
-      fontFamily: 'Times New Roman',
-      bold: true,
-      spacing: { before: 200, after: 200 }
-    },
-    body: {
-      fontSize: 14,
-      fontFamily: 'Times New Roman',
-      spacing: { line: 360 },
-      alignment: 'justify'
-    },
-    margins: {
-      top: 2000,
-      bottom: 2000,
-      left: 3000,
-      right: 1500
-    }
-  };
-
-  // Получение настроек ГОСТ
-  getGostSettings(gostType: string): GostSettings {
-    switch (gostType) {
-      case 'gost-7.32-2017':
-        return this.gost7322017;
-      case 'gost-7.1-2003':
-        return this.gost712003;
-      case 'gost-2.105-95':
-        return this.gost210595;
-      default:
-        return this.gost7322017;
-    }
-  }
-
   // Создание DOCX документа
-  async createDocxDocument(document: IDocument, gostSettings: GostSettings): Promise<Buffer> {
-    const doc = new Document({
-      sections: [{
-        properties: {
-          page: {
-            margin: gostSettings.margins
-          }
-        },
-        children: [
-          // Заголовок
+  public async createDocxDocument(docData: IDocument): Promise<Buffer> {
+    try {
+      // Создаем массив для хранения всех элементов документа
+      const children: any[] = [];
+      // Обрабатываем содержимое документа
+      for (const content of docData.contents) {
+        // Добавляем заголовок раздела
+        let headingLevel: HeadingLevel;
+        let headingSettings: any;
+
+        switch (content.level) {
+          case 1:
+            headingLevel = HeadingLevel.HEADING_1;
+            headingSettings = FormatSettings.heading1;
+            break;
+          case 2:
+            headingLevel = HeadingLevel.HEADING_2;
+            headingSettings = FormatSettings.heading2;
+            break;
+          case 3:
+            headingLevel = HeadingLevel.HEADING_3;
+            headingSettings = FormatSettings.heading3;
+            break;
+          default:
+            headingLevel = HeadingLevel.HEADING_1;
+            headingSettings = FormatSettings.heading1;
+        }
+
+        children.push(
           new Paragraph({
-            children: [new TextRun({
-              text: document.title,
-              ...gostSettings.title
-            })]
-          }),
-          // Содержимое
-          new Paragraph({
-            children: [new TextRun({
-              text: document.content || 'Содержимое документа',
-              ...gostSettings.body
-            })]
+            heading: headingLevel,
+            alignment:
+              headingSettings.alignment === "center"
+                ? AlignmentType.CENTER
+                : AlignmentType.LEFT,
+            spacing: {
+              before: headingSettings.spacing.before || 0,
+              after: headingSettings.spacing.after || 0,
+            },
+            children: [
+              new TextRun({
+                text: content.title,
+                bold: headingSettings.bold,
+                size: headingSettings.fontSize * 2,
+                font: headingSettings.fontFamily,
+              }),
+            ],
           })
-        ]
-      }]
+        );
+
+        // Обрабатываем блоки содержимого
+        for (const block of content.blocks) {
+          await this.processContentBlock(block, children);
+        }
+      }
+
+      // Создаем документ
+      const doc = new Document({
+        sections: [
+          {
+            properties: {
+              page: {
+                margin: {
+                  top: FormatSettings.margins.top,
+                  bottom: FormatSettings.margins.bottom,
+                  left: FormatSettings.margins.left,
+                  right: FormatSettings.margins.right,
+                },
+              },
+            },
+            children: children,
+          },
+        ],
+      });
+
+      // Сохраняем документ
+      return await Packer.toBuffer(doc);
+    } catch (error) {
+      console.error("Ошибка при создании документа:", error);
+      throw error;
+    }
+  }
+
+  private async processContentBlock(
+    block: IContentBlock,
+    children: any[]
+  ): Promise<void> {
+    switch (block.type) {
+      case ContentBlockType.PARAGRAPH:
+        children.push(this.createParagraph(block.data));
+        break;
+
+      case ContentBlockType.IMAGE:
+        // Для изображений предполагается, что data содержит base64 или путь
+        await this.processImage(block.data, children);
+        break;
+
+      case ContentBlockType.TABLE:
+        await this.processTable(block.data, children);
+        break;
+
+      case ContentBlockType.FORMULA:
+        children.push(this.createFormula(block.data));
+        break;
+
+      default:
+        children.push(this.createParagraph(block.data));
+    }
+  }
+
+  private createParagraph(text: string): Paragraph {
+    return new Paragraph({
+      alignment:
+        FormatSettings.body.alignment === "justify"
+          ? AlignmentType.JUSTIFIED
+          : AlignmentType.LEFT,
+      spacing: {
+        line: FormatSettings.body.spacing.line,
+      },
+      children: [
+        new TextRun({
+          text: text,
+          size: FormatSettings.body.fontSize * 2,
+          font: FormatSettings.body.fontFamily,
+        }),
+      ],
     });
-
-    return await Packer.toBuffer(doc);
   }
 
-  // Получение доступных шаблонов ГОСТ
-  getAvailableTemplates(): GostTemplate[] {
-    return [
-      {
-        id: 'gost-7.32-2017',
-        name: 'ГОСТ 7.32-2017',
-        description: 'Отчет о научно-исследовательской работе',
-        type: 'report',
-        settings: this.gost7322017
-      },
-      {
-        id: 'gost-7.1-2003',
-        name: 'ГОСТ 7.1-2003',
-        description: 'Библиографическая запись',
-        type: 'bibliography',
-        settings: this.gost712003
-      },
-      {
-        id: 'gost-2.105-95',
-        name: 'ГОСТ 2.105-95',
-        description: 'Единая система конструкторской документации',
-        type: 'technical',
-        settings: this.gost210595
-      }
-    ];
+  private async processImage(
+    imageData: string,
+    children: any[]
+  ): Promise<void> {
+    try {
+      // Предполагаем, что imageData содержит base64 строку
+      // или путь к файлу. В реальном приложении нужно обработать оба случая
+      const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
+      const imageBuffer = Buffer.from(base64Data, "base64");
+
+      children.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new ImageRun({
+              data: imageBuffer,
+              transformation: {
+                width: 400,
+                height: 300,
+              },
+            }),
+          ],
+        })
+      );
+    } catch (error) {
+      console.error("Ошибка при обработке изображения:", error);
+      // Добавляем placeholder вместо изображения
+      children.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new TextRun({
+              text: "[Изображение]",
+              italics: true,
+              color: "FF0000",
+            }),
+          ],
+        })
+      );
+    }
   }
 
-  // Валидация документа на соответствие ГОСТ
-  validateDocument(document: IDocument): ValidationResult {
-    const gostSettings = this.getGostSettings(document.gostFormat);
-    
-    const validationResults: ValidationResult = {
-      isValid: true,
-      errors: [],
-      warnings: [],
-      recommendations: []
-    };
+  private async processTable(
+    tableData: string,
+    children: any[]
+  ): Promise<void> {
+    try {
+      // Предполагаем, что tableData содержит JSON с данными таблицы
+      const tableJson = JSON.parse(tableData);
+      const rows = tableJson.rows || [];
 
-    // Проверяем заголовок
-    if (!document.title || document.title.length < 5) {
-      validationResults.errors.push('Заголовок документа должен содержать минимум 5 символов');
-      validationResults.isValid = false;
+      const tableRows = rows.map((row: any[], rowIndex: number) => {
+        const tableCells = row.map((cell: any) => {
+          return new TableCell({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: String(cell || ""),
+                    size: FormatSettings.body.fontSize * 2,
+                    font: FormatSettings.body.fontFamily,
+                  }),
+                ],
+              }),
+            ],
+            verticalAlign: VerticalAlign.CENTER,
+            shading: {
+              fill: rowIndex === 0 ? "D3D3D3" : "auto", // Заголовок серый
+              type: ShadingType.CLEAR,
+            },
+          });
+        });
+
+        return new TableRow({
+          children: tableCells,
+          tableHeader: rowIndex === 0, // Первая строка - заголовок
+        });
+      });
+
+      children.push(
+        new Table({
+          width: {
+            size: 100,
+            type: WidthType.PERCENTAGE,
+          },
+          rows: tableRows,
+          borders: {
+            top: {
+              style: BorderStyle.SINGLE,
+              size: 1,
+              color: "auto",
+            },
+            bottom: {
+              style: BorderStyle.SINGLE,
+              size: 1,
+              color: "auto",
+            },
+            left: {
+              style: BorderStyle.SINGLE,
+              size: 1,
+              color: "auto",
+            },
+            right: {
+              style: BorderStyle.SINGLE,
+              size: 1,
+              color: "auto",
+            },
+          },
+        })
+      );
+    } catch (error) {
+      console.error("Ошибка при обработке таблицы:", error);
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "[Таблица]",
+              italics: true,
+              color: "FF0000",
+            }),
+          ],
+        })
+      );
     }
-
-    if (document.title && document.title.length > 200) {
-      validationResults.warnings.push('Заголовок документа слишком длинный');
-    }
-
-    // Проверяем содержимое
-    if (!document.content || document.content.length < 100) {
-      validationResults.warnings.push('Содержимое документа слишком короткое');
-    }
-
-    // Проверяем настройки форматирования
-    if (document.settings.fontSize !== gostSettings.body.fontSize) {
-      validationResults.recommendations.push(`Рекомендуемый размер шрифта: ${gostSettings.body.fontSize}pt`);
-    }
-
-    if (document.settings.fontFamily !== gostSettings.body.fontFamily) {
-      validationResults.recommendations.push(`Рекомендуемый шрифт: ${gostSettings.body.fontFamily}`);
-    }
-
-    if (document.settings.lineSpacing !== 1.5) {
-      validationResults.recommendations.push('Рекомендуемый межстрочный интервал: 1.5');
-    }
-
-    // Проверяем метаданные
-    if (!document.metadata.author) {
-      validationResults.warnings.push('Не указан автор документа');
-    }
-
-    if (!document.metadata.subject) {
-      validationResults.warnings.push('Не указана тема документа');
-    }
-
-    if (!document.metadata.year) {
-      validationResults.warnings.push('Не указан год создания документа');
-    }
-
-    // Проверяем поля
-    if (document.metadata.year && (document.metadata.year < 2000 || document.metadata.year > new Date().getFullYear() + 1)) {
-      validationResults.errors.push('Некорректный год создания документа');
-      validationResults.isValid = false;
-    }
-
-    return validationResults;
   }
 
-  // Применение ГОСТ настроек к документу
-  applyGostSettings(document: IDocument, gostType: string): Partial<IDocument> {
-    const gostSettings = this.getGostSettings(gostType);
-    
-    return {
-      gostFormat: gostType as 'gost-7.32-2017' | 'gost-7.1-2003' | 'gost-2.105-95',
-      settings: {
-        ...document.settings,
-        fontSize: gostSettings.body.fontSize,
-        lineSpacing: 1.5,
-        margins: gostSettings.margins,
-        fontFamily: gostSettings.body.fontFamily
-      }
-    };
+  private createFormula(formulaData: string): Paragraph {
+    return new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 100, after: 100 },
+      children: [
+        new TextRun({
+          text: formulaData,
+          size: FormatSettings.body.fontSize * 2,
+          font: FormatSettings.body.fontFamily,
+          italics: true,
+        }),
+      ],
+    });
   }
-
-  // Получение рекомендаций по форматированию
-  getFormattingRecommendations(document: IDocument): string[] {
-    const gostSettings = this.getGostSettings(document.gostFormat);
-    const recommendations: string[] = [];
-
-    if (document.settings.fontSize !== gostSettings.body.fontSize) {
-      recommendations.push(`Измените размер шрифта на ${gostSettings.body.fontSize}pt`);
-    }
-
-    if (document.settings.fontFamily !== gostSettings.body.fontFamily) {
-      recommendations.push(`Измените шрифт на ${gostSettings.body.fontFamily}`);
-    }
-
-    if (document.settings.lineSpacing !== 1.5) {
-      recommendations.push('Установите межстрочный интервал 1.5');
-    }
-
-    if (!document.metadata.author) {
-      recommendations.push('Добавьте информацию об авторе');
-    }
-
-    if (!document.metadata.subject) {
-      recommendations.push('Добавьте тему документа');
-    }
-
-    return recommendations;
-  }
-} 
+}

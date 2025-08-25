@@ -1,12 +1,12 @@
-import { Request } from 'express';
-import { Document, Model } from 'mongoose';
+import { Request } from "express";
+import { Document, Model } from "mongoose";
 
 // User types
 export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   avatar?: string;
   createdAt: Date;
   lastLogin: Date;
@@ -14,22 +14,26 @@ export interface IUser extends Document {
 }
 
 // Document types
+export enum ContentBlockType {
+  PARAGRAPH = "paragraph",
+  IMAGE = "image",
+  TABLE = "table",
+  FORMULA = "formula",
+}
+
+export interface IContentBlock {
+  type: ContentBlockType;
+  data: string;
+}
+
+export interface IDocumentContent {
+  title: string;
+  level: 1 | 2 | 3;
+  blocks: IContentBlock[];
+}
 export interface IDocument extends Document {
   title: string;
-  type: 'coursework' | 'thesis' | 'report' | 'essay';
-  content: string;
-  gostFormat: 'gost-7.32-2017' | 'gost-7.1-2003' | 'gost-2.105-95';
-  settings: {
-    fontSize: number;
-    lineSpacing: number;
-    margins: {
-      top: number;
-      bottom: number;
-      left: number;
-      right: number;
-    };
-    fontFamily: string;
-  };
+  contents: IDocumentContent[];
   metadata: {
     author?: string;
     supervisor?: string;
@@ -44,11 +48,7 @@ export interface IDocument extends Document {
     mimetype: string;
     size: number;
   };
-  status: 'draft' | 'in_progress' | 'completed';
-  version: number;
-  user: IUser['_id'];
-  isPublic: boolean;
-  tags: string[];
+  user: IUser["_id"];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -104,4 +104,4 @@ export interface EnvVars {
   MONGODB_URI: string;
   JWT_SECRET: string;
   JWT_EXPIRE: string;
-} 
+}

@@ -14,12 +14,10 @@ export class DocumentController {
   // @desc    Получение всех документов пользователя
   // @access  Private
   getDocuments = catchAsync(async (req: AuthRequest, res: Response<PaginatedResponse<any>>) => {
-    const { page, limit, type, status, search, sortBy, sortOrder } = req.query;
+    const { page, limit, search, sortBy, sortOrder } = req.query;
     
     const query: any = { user: req.user!._id };
     
-    if (type) query.type = type;
-    if (status) query.status = status;
     if (search) {
       query.$text = { $search: search };
     }
@@ -73,13 +71,11 @@ export class DocumentController {
       return;
     }
 
-    const { title, type, gostFormat } = req.body;
+    const { title } = req.body;
 
     const document = await this.documentService.createDocumentFromFile({
       file: req.file,
       title: title || req.file.originalname,
-      type: type || 'report',
-      gostFormat: gostFormat || 'gost-7.32-2017',
       userId: req.user!._id
     });
 
@@ -150,7 +146,6 @@ export class DocumentController {
 
     const updateData = { ...req.body };
     updateData.updatedAt = new Date();
-    updateData.version = document.version + 1;
 
     const updatedDocument = await this.documentService.updateDocument(
       documentId,
