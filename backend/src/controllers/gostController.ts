@@ -1,15 +1,15 @@
 import { Response } from "express";
 import { DocumentService } from "../services/documentService";
-import { GostService } from "../services/gostService";
+import { ConverterService } from "../services/ConverterService";
 import { AuthRequest } from "../types";
 import { catchAsync } from "../utils/errorHandler";
 
 export class GostController {
-  private gostService: GostService;
+  private gostService: ConverterService;
   private documentService: DocumentService;
 
   constructor() {
-    this.gostService = new GostService();
+    this.gostService = new ConverterService();
     this.documentService = new DocumentService();
   }
 

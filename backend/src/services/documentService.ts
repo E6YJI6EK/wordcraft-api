@@ -1,6 +1,7 @@
 import fs from "fs";
 import Document from "../models/Document";
 import { IDocument, PaginatedResponse } from "../types";
+import { DocxParserService } from "./DocxParserService";
 
 interface PaginationOptions {
   page: number;
@@ -15,6 +16,11 @@ interface FileUploadData {
 }
 
 export class DocumentService {
+  private docxParserService: DocxParserService;
+
+  constructor() {
+    this.docxParserService = new DocxParserService();
+  }
   // Создание документа
   async createDocument(documentData: Partial<IDocument>): Promise<IDocument> {
     return await Document.create(documentData);
@@ -22,9 +28,10 @@ export class DocumentService {
 
   // Создание документа из файла
   async createDocumentFromFile(data: FileUploadData): Promise<IDocument> {
-    // TODO: сделать нормализацию импортированного документа
+    const res = await this.docxParserService.parseDocx(data.file.path);
     return await Document.create({
       title: data.title,
+      contents: res.contents,
       originalFile: {
         filename: data.file.originalname,
         path: data.file.path,

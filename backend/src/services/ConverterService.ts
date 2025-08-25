@@ -16,7 +16,7 @@ import {
 import { FormatSettings } from "../config/formatSettings";
 import { ContentBlockType, IContentBlock, IDocument } from "../types";
 
-enum HeadingLevel {
+export enum HeadingLevel {
   HEADING_1= "Heading1",
   HEADING_2= "Heading2",
   HEADING_3= "Heading3",
@@ -26,7 +26,7 @@ enum HeadingLevel {
   TITLE= "Title",
 }
 
-export class GostService {
+export class ConverterService {
   // Создание DOCX документа
   public async createDocxDocument(docData: IDocument): Promise<Buffer> {
     try {
