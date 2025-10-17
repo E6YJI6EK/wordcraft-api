@@ -7,27 +7,84 @@ import { AuthController } from '../controllers/authController';
 const router = express.Router();
 const authController = new AuthController();
 
-// @route   POST /api/auth/register
+/**
+ * @openapi
+ * /api/auth/register:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Регистрация нового пользователя
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       201:
+ *         description: Пользователь создан
+ */
 // @desc    Регистрация нового пользователя
 // @access  Public
 router.post('/register', validateBody(registerSchema), authController.register);
 
-// @route   POST /api/auth/login
+/**
+ * @openapi
+ * /api/auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Вход пользователя
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: Успешный вход
+ */
 // @desc    Вход пользователя
 // @access  Public
 router.post('/login', validateBody(loginSchema), authController.login);
 
-// @route   GET /api/auth/me
+/**
+ * @openapi
+ * /api/auth/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Получение данных текущего пользователя
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Данные пользователя
+ */
 // @desc    Получение данных текущего пользователя
 // @access  Private
 router.get('/me', protect, authController.getMe);
 
-// @route   PUT /api/auth/profile
+/**
+ * @openapi
+ * /api/auth/profile:
+ *   put:
+ *     tags: [Auth]
+ *     summary: Обновление профиля пользователя
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: Профиль обновлен
+ */
 // @desc    Обновление профиля пользователя
 // @access  Private
 router.put('/profile', protect, validateBody(updateProfileSchema), authController.updateProfile);
 
-// @route   POST /api/auth/logout
+/**
+ * @openapi
+ * /api/auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Выход пользователя
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         description: Выход выполнен
+ */
 // @desc    Выход пользователя
 // @access  Private
 router.post('/logout', protect, authController.logout);

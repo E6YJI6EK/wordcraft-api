@@ -51,37 +51,144 @@ const idParamSchema = z.object({
   id: z.string().min(1, 'ID документа обязателен')
 });
 
-// @route   GET /api/documents
+/**
+ * @openapi
+ * /api/documents:
+ *   get:
+ *     tags: [Documents]
+ *     summary: Получение всех документов пользователя
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Список документов
+ */
 // @desc    Получение всех документов пользователя
 // @access  Private
 router.get('/', protect, validateQuery(documentQuerySchema), documentController.getDocuments);
 
-// @route   POST /api/documents
+/**
+ * @openapi
+ * /api/documents:
+ *   post:
+ *     tags: [Documents]
+ *     summary: Создание нового документа
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       201:
+ *         description: Документ создан
+ */
 // @desc    Создание нового документа
 // @access  Private
 router.post('/', protect, validateBody(createDocumentSchema), documentController.createDocument);
 
-// @route   POST /api/documents/upload
+/**
+ * @openapi
+ * /api/documents/upload:
+ *   post:
+ *     tags: [Documents]
+ *     summary: Загрузка документа из файла
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       201:
+ *         description: Документ загружен
+ */
 // @desc    Загрузка документа из файла
 // @access  Private
 router.post('/upload', protect, upload.single('document'), documentController.uploadDocument);
 
-// @route   GET /api/documents/:id
+/**
+ * @openapi
+ * /api/documents/{id}:
+ *   get:
+ *     tags: [Documents]
+ *     summary: Получение документа по ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Документ
+ */
 // @desc    Получение документа по ID
 // @access  Private
 router.get('/:id', protect, validateParams(idParamSchema), documentController.getDocument);
 
-// @route   PUT /api/documents/:id
+/**
+ * @openapi
+ * /api/documents/{id}:
+ *   put:
+ *     tags: [Documents]
+ *     summary: Обновление документа
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: Документ обновлен
+ */
 // @desc    Обновление документа
 // @access  Private
 router.put('/:id', protect, validateParams(idParamSchema), validateBody(updateDocumentSchema), documentController.updateDocument);
 
-// @route   DELETE /api/documents/:id
+/**
+ * @openapi
+ * /api/documents/{id}:
+ *   delete:
+ *     tags: [Documents]
+ *     summary: Удаление документа
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Документ удален
+ */
 // @desc    Удаление документа
 // @access  Private
 router.delete('/:id', protect, validateParams(idParamSchema), documentController.deleteDocument);
 
-// @route   POST /api/documents/:id/duplicate
+/**
+ * @openapi
+ * /api/documents/{id}/duplicate:
+ *   post:
+ *     tags: [Documents]
+ *     summary: Дублирование документа
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Документ продублирован
+ */
 // @desc    Дублирование документа
 // @access  Private
 router.post('/:id/duplicate', protect, validateParams(idParamSchema), documentController.duplicateDocument);

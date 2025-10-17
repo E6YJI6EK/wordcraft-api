@@ -12,7 +12,24 @@ const idParamSchema = z.object({
   id: z.string().min(1, "ID документа обязателен"),
 });
 
-// @route   POST /api/gost/export/:id
+/**
+ * @openapi
+ * /api/gost/export/{id}:
+ *   post:
+ *     tags: [GOST]
+ *     summary: Экспорт документа в формате DOCX
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Файл DOCX
+ */
 // @desc    Экспорт документа в формате DOCX
 // @access  Private
 router.post(

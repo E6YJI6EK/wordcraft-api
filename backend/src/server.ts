@@ -4,6 +4,8 @@ import dotenv from 'dotenv'
 import express, { Application } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
+import swaggerUi from 'swagger-ui-express'
+import swaggerSpec from './config/swagger'
 
 // Импорт роутов
 import authRoutes from './routes/auth'
@@ -35,11 +37,34 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }))
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 // Routes
+/**
+ * @openapi
+ * tags:
+ *   - name: Auth
+ *     description: Авторизация и пользователи
+ *   - name: Documents
+ *     description: Работа с документами
+ *   - name: GOST
+ *     description: Экспорт и форматирование по ГОСТу
+ */
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
 app.use('/api/auth', authRoutes)
 app.use('/api/documents', documentRoutes)
 app.use('/api/gost', gostRoutes)
 
 // Health check
+/**
+ * @openapi
+ * /api/health:
+ *   get:
+ *     summary: Проверка состояния API
+ *     tags: [Misc]
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 app.get('/api/health', (_req, res) => {
 	res.json({
 		status: 'OK',
