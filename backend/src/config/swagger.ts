@@ -3,12 +3,12 @@ import swaggerJSDoc from 'swagger-jsdoc'
 const swaggerDefinition = {
 	openapi: '3.0.3',
 	info: {
-		title: 'GOST Document Formatter API',
+		title: 'Wordcraft API',
 		version: '1.0.0',
 		description: 'API для форматирования документов по ГОСТу',
 	},
 	servers: [
-		{ url: 'http://localhost:5000', description: 'Local' },
+		{ url: process.env['APP_URL'], description: 'Local' },
 	],
 	components: {
 		securitySchemes: {

@@ -59,6 +59,47 @@ const idParamSchema = z.object({
  *     summary: Получение всех документов пользователя
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *           maxLength: 100
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [coursework, thesis, report, essay]
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, in_progress, completed]
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, updatedAt, title]
+ *           default: createdAt
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
  *     responses:
  *       200:
  *         description: Список документов
@@ -77,6 +118,98 @@ router.get('/', protect, validateQuery(documentQuerySchema), documentController.
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 200
+ *               type:
+ *                 type: string
+ *                 enum: [coursework, thesis, report, essay]
+ *               content:
+ *                 type: string
+ *               gostFormat:
+ *                 type: string
+ *                 enum: [gost-7.32-2017, gost-7.1-2003, gost-2.105-95]
+ *                 default: gost-7.32-2017
+ *               settings:
+ *                 type: object
+ *                 properties:
+ *                   fontSize:
+ *                     type: number
+ *                     minimum: 8
+ *                     maximum: 72
+ *                     default: 14
+ *                   lineSpacing:
+ *                     type: number
+ *                     minimum: 1
+ *                     maximum: 3
+ *                     default: 1.5
+ *                   margins:
+ *                     type: object
+ *                     properties:
+ *                       top:
+ *                         type: number
+ *                         minimum: 10
+ *                         maximum: 50
+ *                         default: 20
+ *                       bottom:
+ *                         type: number
+ *                         minimum: 10
+ *                         maximum: 50
+ *                         default: 20
+ *                       left:
+ *                         type: number
+ *                         minimum: 20
+ *                         maximum: 50
+ *                         default: 30
+ *                       right:
+ *                         type: number
+ *                         minimum: 10
+ *                         maximum: 30
+ *                         default: 15
+ *                   fontFamily:
+ *                     type: string
+ *                     default: Times New Roman
+ *               metadata:
+ *                 type: object
+ *                 properties:
+ *                   author:
+ *                     type: string
+ *                     maxLength: 100
+ *                   supervisor:
+ *                     type: string
+ *                     maxLength: 100
+ *                   department:
+ *                     type: string
+ *                     maxLength: 100
+ *                   year:
+ *                     type: number
+ *                   subject:
+ *                     type: string
+ *                     maxLength: 200
+ *                   keywords:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       maxLength: 50
+ *                     maxItems: 10
+ *               isPublic:
+ *                 type: boolean
+ *                 default: false
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   maxLength: 30
+ *                 maxItems: 20
+ *             required:
+ *               - title
+ *               - type
  *     responses:
  *       201:
  *         description: Документ создан
@@ -95,6 +228,16 @@ router.post('/', protect, validateBody(createDocumentSchema), documentController
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *             required:
+ *               - document
  *     responses:
  *       201:
  *         description: Документ загружен
@@ -141,6 +284,78 @@ router.get('/:id', protect, validateParams(idParamSchema), documentController.ge
  *           type: string
  *     requestBody:
  *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 200
+ *               type:
+ *                 type: string
+ *                 enum: [coursework, thesis, report, essay]
+ *               content:
+ *                 type: string
+ *               gostFormat:
+ *                 type: string
+ *                 enum: [gost-7.32-2017, gost-7.1-2003, gost-2.105-95]
+ *               settings:
+ *                 type: object
+ *                 properties:
+ *                   fontSize:
+ *                     type: number
+ *                     minimum: 8
+ *                     maximum: 72
+ *                   lineSpacing:
+ *                     type: number
+ *                     minimum: 1
+ *                     maximum: 3
+ *                   margins:
+ *                     type: object
+ *                     properties:
+ *                       top:
+ *                         type: number
+ *                         minimum: 10
+ *                         maximum: 50
+ *                       bottom:
+ *                         type: number
+ *                         minimum: 10
+ *                         maximum: 50
+ *                       left:
+ *                         type: number
+ *                         minimum: 20
+ *                         maximum: 50
+ *                       right:
+ *                         type: number
+ *                         minimum: 10
+ *                         maximum: 30
+ *                   fontFamily:
+ *                     type: string
+ *               metadata:
+ *                 type: object
+ *                 properties:
+ *                   author:
+ *                     type: string
+ *                   supervisor:
+ *                     type: string
+ *                   department:
+ *                     type: string
+ *                   year:
+ *                     type: number
+ *                   subject:
+ *                     type: string
+ *                   keywords:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *               isPublic:
+ *                 type: boolean
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       200:
  *         description: Документ обновлен

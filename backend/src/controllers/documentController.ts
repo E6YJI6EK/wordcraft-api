@@ -72,7 +72,7 @@ export class DocumentController {
     }
 
     const { title } = req.body;
-
+console.log(req.file);
     const document = await this.documentService.createDocumentFromFile({
       file: req.file,
       title: title || req.file.originalname,

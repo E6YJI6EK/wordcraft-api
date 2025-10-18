@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
-import { ContentBlockType, IDocument } from "../types";
+import { IDocument } from "../types";
 
 export interface DocumentDocument extends IDocument, MongooseDocument {}
 
@@ -9,22 +9,6 @@ const documentSchema = new Schema<DocumentDocument>(
       type: String,
       required: [true, "Название документа обязательно"],
       trim: true,
-    },
-    contents: {
-      title: String,
-      level: Number,
-      blocks: [
-        {
-          type: String,
-          enum: [
-            ContentBlockType.PARAGRAPH,
-            ContentBlockType.IMAGE,
-            ContentBlockType.TABLE,
-            ContentBlockType.FORMULA,
-          ],
-          data: String,
-        },
-      ],
     },
     metadata: {
       author: String,
@@ -69,6 +53,13 @@ documentSchema.virtual("fileUrl").get(function () {
     return `/uploads/${this.originalFile.filename}`;
   }
   return null;
+});
+
+// Виртуальное поле для получения разделов документа
+documentSchema.virtual("contents", {
+  ref: "Content",
+  localField: "_id",
+  foreignField: "document",
 });
 
 // Метод для обновления версии документа

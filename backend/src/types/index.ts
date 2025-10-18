@@ -33,7 +33,6 @@ export interface IDocumentContent {
 }
 export interface IDocument extends Document {
   title: string;
-  contents: IDocumentContent[];
   metadata: {
     author?: string;
     supervisor?: string;

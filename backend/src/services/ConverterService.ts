@@ -14,7 +14,12 @@ import {
   WidthType,
 } from "docx";
 import { FormatSettings } from "../config/formatSettings";
-import { ContentBlockType, IContentBlock, IDocument } from "../types";
+import { ContentBlockType, IContentBlock, IDocumentContent } from "../types";
+
+export interface IDocumentWithContents {
+  title: string;
+  contents: IDocumentContent[];
+}
 
 export enum HeadingLevel {
   HEADING_1= "Heading1",
@@ -28,7 +33,7 @@ export enum HeadingLevel {
 
 export class ConverterService {
   // Создание DOCX документа
-  public async createDocxDocument(docData: IDocument): Promise<Buffer> {
+  public async createDocxDocument(docData: IDocumentWithContents): Promise<Buffer> {
     try {
       // Создаем массив для хранения всех элементов документа
       const children: any[] = [];

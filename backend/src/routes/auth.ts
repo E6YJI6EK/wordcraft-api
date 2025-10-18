@@ -15,6 +15,25 @@ const authController = new AuthController();
  *     summary: Регистрация нового пользователя
  *     requestBody:
  *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *             required:
+ *               - name
+ *               - email
+ *               - password
  *     responses:
  *       201:
  *         description: Пользователь создан
@@ -31,6 +50,20 @@ router.post('/register', validateBody(registerSchema), authController.register);
  *     summary: Вход пользователя
  *     requestBody:
  *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 1
+ *             required:
+ *               - email
+ *               - password
  *     responses:
  *       200:
  *         description: Успешный вход
@@ -65,6 +98,18 @@ router.get('/me', protect, authController.getMe);
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *               email:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       200:
  *         description: Профиль обновлен

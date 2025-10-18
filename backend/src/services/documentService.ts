@@ -1,7 +1,9 @@
 import fs from "fs";
 import Document from "../models/Document";
+import Content from "../models/Content";
+import Block from "../models/Block";
 import { IDocument, PaginatedResponse } from "../types";
-import { DocxParserService } from "./DocxParserService";
+import { DocxParserService, IDocumentParseResult } from "./DocxParserService";
 
 interface PaginationOptions {
   page: number;
@@ -28,10 +30,11 @@ export class DocumentService {
 
   // Создание документа из файла
   async createDocumentFromFile(data: FileUploadData): Promise<IDocument> {
-    const res = await this.docxParserService.parseDocx(data.file.path);
-    return await Document.create({
-      title: data.title,
-      contents: res.contents,
+    const parseResult: IDocumentParseResult = await this.docxParserService.parseDocx(data.file.path);
+    
+    // Создаем документ
+    const document = await Document.create({
+      title: data.title || parseResult.title,
       originalFile: {
         filename: data.file.originalname,
         path: data.file.path,
@@ -40,6 +43,37 @@ export class DocumentService {
       },
       user: data.userId,
     });
+
+    // Создаем разделы и блоки
+    for (let i = 0; i < parseResult.contents.length; i++) {
+      const contentData = parseResult.contents[i];
+      
+      if (contentData) {
+        // Создаем раздел
+        const content = await Content.create({
+          title: contentData.title,
+          level: contentData.level,
+          document: document._id,
+          order: i,
+        });
+
+        // Создаем блоки для раздела
+        for (let j = 0; j < contentData.blocks.length; j++) {
+          const blockData = contentData.blocks[j];
+          
+          if (blockData) {
+            await Block.create({
+              type: blockData.type,
+              data: blockData.data,
+              content: content._id,
+              order: j,
+            });
+          }
+        }
+      }
+    }
+
+    return document;
   }
 
   // Получение документа по ID и пользователю
@@ -48,6 +82,40 @@ export class DocumentService {
     userId: string
   ): Promise<IDocument | null> {
     return await Document.findOne({ _id: documentId, user: userId });
+  }
+
+  // Получение документа с содержимым для конвертации
+  async getDocumentWithContents(documentId: string, userId: string): Promise<any> {
+    const document = await Document.findOne({ _id: documentId, user: userId });
+    if (!document) {
+      return null;
+    }
+
+    // Получаем разделы документа
+    const contents = await Content.find({ document: documentId })
+      .sort({ order: 1 });
+
+    // Получаем блоки для каждого раздела
+    const contentsWithBlocks = await Promise.all(
+      contents.map(async (content) => {
+        const blocks = await Block.find({ content: content._id })
+          .sort({ order: 1 });
+        
+        return {
+          title: content.title,
+          level: content.level,
+          blocks: blocks.map(block => ({
+            type: block.type,
+            data: block.data
+          }))
+        };
+      })
+    );
+
+    return {
+      title: document.title,
+      contents: contentsWithBlocks
+    };
   }
 
   // Получение документа по ID (для публичных документов)

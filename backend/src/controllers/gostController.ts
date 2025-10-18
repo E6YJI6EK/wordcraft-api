@@ -26,12 +26,12 @@ export class GostController {
       return;
     }
 
-    const document = await this.documentService.getDocumentByIdAndUser(
+    const documentWithContents = await this.documentService.getDocumentWithContents(
       documentId,
       req.user!._id
     );
 
-    if (!document) {
+    if (!documentWithContents) {
       res.status(404).json({
         success: false,
         message: "Документ не найден.",
@@ -39,8 +39,8 @@ export class GostController {
       return;
     }
 
-    const docxBuffer = await this.gostService.createDocxDocument(document);
-    const fileName = `${document.title.replace(
+    const docxBuffer = await this.gostService.createDocxDocument(documentWithContents);
+    const fileName = `${documentWithContents.title.replace(
       /[^a-zA-Z0-9]/g,
       "_"
     )}_${Date.now()}.docx`;

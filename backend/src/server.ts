@@ -140,7 +140,7 @@ const startServer = async (): Promise<void> => {
 	try {
 		await connectDB()
 
-		const PORT = Number(process.env['PORT']) || 5000
+		const PORT = Number(process.env['PORT']) || 5001
 
 		app.listen(PORT, () => {
 			console.log(`🚀 Сервер запущен на порту ${PORT}`)
