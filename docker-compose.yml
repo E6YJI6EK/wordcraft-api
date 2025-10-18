@@ -1,7 +1,6 @@
 services:
   mongodb:
     image: mongo:7.0
-    container_name: gost-mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
@@ -17,7 +16,6 @@ services:
 
   mongo-express:
     image: mongo-express:1.0.0
-    container_name: gost-mongo-express
     restart: unless-stopped
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: admin
