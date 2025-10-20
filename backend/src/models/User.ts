@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { IUser } from '../types';
+import { IUser, UserRole } from '../types';
 
 export interface UserDocument extends IUser, Document {}
 
@@ -18,28 +18,20 @@ const userSchema = new Schema<UserDocument>({
     minlength: [6, 'Пароль должен содержать минимум 6 символов'],
     select: false
   },
-  name: {
+  login: {
     type: String,
     required: [true, 'Имя обязательно'],
     trim: true
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
+    enum: Object.values(UserRole),
+    default: UserRole.USER
   },
-  avatar: {
+  avatarUrl: {
     type: String,
-    default: ''
+    default: null
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  lastLogin: {
-    type: Date,
-    default: Date.now
-  }
 }, {
   timestamps: true
 });

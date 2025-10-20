@@ -1,7 +1,14 @@
-import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
+import mongoose, {
+  Schema,
+  Document as MongooseDocument,
+  Types,
+} from "mongoose";
 import { IDocument } from "../types";
 
-export interface DocumentDocument extends IDocument, MongooseDocument {}
+export interface DocumentDocument extends IDocument, MongooseDocument {
+  user: Types.ObjectId;
+  documentSettings: Types.ObjectId;
+}
 
 const documentSchema = new Schema<DocumentDocument>(
   {
@@ -9,14 +16,6 @@ const documentSchema = new Schema<DocumentDocument>(
       type: String,
       required: [true, "Название документа обязательно"],
       trim: true,
-    },
-    metadata: {
-      author: String,
-      supervisor: String,
-      department: String,
-      year: Number,
-      subject: String,
-      keywords: [String],
     },
     originalFile: {
       filename: String,
@@ -29,13 +28,10 @@ const documentSchema = new Schema<DocumentDocument>(
       ref: "User",
       required: true,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
+    documentSettings: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DocumentSettings",
+      required: true,
     },
   },
   {
@@ -62,20 +58,9 @@ documentSchema.virtual("contents", {
   foreignField: "document",
 });
 
-// Метод для обновления версии документа
-documentSchema.methods["incrementVersion"] = function (): void {
-  this["updatedAt"] = new Date();
-};
-
 // Статический метод для поиска документов пользователя
-documentSchema.statics["findByUser"] = function (
-  userId: string,
-  options: any = {}
-) {
-  return this.find({ user: userId })
-    .sort(options.sort || { createdAt: -1 })
-    .limit(options.limit || 10)
-    .skip(options.skip || 0);
+documentSchema.statics["findByUser"] = function (userId: string) {
+  return this.find({ user: userId });
 };
 
 const Document = mongoose.model<DocumentDocument>("Document", documentSchema);

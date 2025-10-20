@@ -2,7 +2,13 @@ import fs from "fs";
 import Document from "../models/Document";
 import Content from "../models/Content";
 import Block from "../models/Block";
-import { IDocument, PaginatedResponse } from "../types";
+import {
+  DocumentContentLevel,
+  IDocument,
+  PaginatedResponse,
+  ContentBlockType,
+  IDocumentSettings,
+} from "../types";
 import { DocxParserService, IDocumentParseResult } from "./DocxParserService";
 
 interface PaginationOptions {
@@ -30,8 +36,9 @@ export class DocumentService {
 
   // Создание документа из файла
   async createDocumentFromFile(data: FileUploadData): Promise<IDocument> {
-    const parseResult: IDocumentParseResult = await this.docxParserService.parseDocx(data.file.path);
-    
+    const parseResult: IDocumentParseResult =
+      await this.docxParserService.parseDocx(data.file.path);
+
     // Создаем документ
     const document = await Document.create({
       title: data.title || parseResult.title,
@@ -47,7 +54,7 @@ export class DocumentService {
     // Создаем разделы и блоки
     for (let i = 0; i < parseResult.contents.length; i++) {
       const contentData = parseResult.contents[i];
-      
+
       if (contentData) {
         // Создаем раздел
         const content = await Content.create({
@@ -60,7 +67,7 @@ export class DocumentService {
         // Создаем блоки для раздела
         for (let j = 0; j < contentData.blocks.length; j++) {
           const blockData = contentData.blocks[j];
-          
+
           if (blockData) {
             await Block.create({
               type: blockData.type,
@@ -85,37 +92,55 @@ export class DocumentService {
   }
 
   // Получение документа с содержимым для конвертации
-  async getDocumentWithContents(documentId: string, userId: string): Promise<any> {
+  async getDocumentWithContents(
+    documentId: string,
+    userId: string
+  ): Promise<{
+    title: string;
+    contents: {
+      title: string;
+      level: DocumentContentLevel;
+      blocks: {
+        type: ContentBlockType;
+        data: string;
+      }[];
+    }[];
+    settings: IDocumentSettings;
+  } | null> {
     const document = await Document.findOne({ _id: documentId, user: userId });
     if (!document) {
       return null;
     }
 
     // Получаем разделы документа
-    const contents = await Content.find({ document: documentId })
-      .sort({ order: 1 });
+    const contents = await Content.find({ document: documentId }).sort({
+      order: 1,
+    });
 
     // Получаем блоки для каждого раздела
     const contentsWithBlocks = await Promise.all(
       contents.map(async (content) => {
-        const blocks = await Block.find({ content: content._id })
-          .sort({ order: 1 });
-        
+        const blocks = await Block.find({ content: content._id }).sort({
+          order: 1,
+        });
+
         return {
           title: content.title,
           level: content.level,
-          blocks: blocks.map(block => ({
+          blocks: blocks.map((block) => ({
             type: block.type,
-            data: block.data
-          }))
+            data: block.data,
+          })),
         };
       })
     );
 
-    return {
+    const res = {
       title: document.title,
-      contents: contentsWithBlocks
+      contents: contentsWithBlocks,
+      settings: document.settings,
     };
+    return res;
   }
 
   // Получение документа по ID (для публичных документов)
@@ -190,7 +215,6 @@ export class DocumentService {
   ): Promise<IDocument> {
     return await Document.create({
       title: `${originalDoc.title} (копия)`,
-      metadata: originalDoc.metadata,
       user: userId,
     });
   }

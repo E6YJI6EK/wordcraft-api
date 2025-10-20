@@ -1,15 +1,10 @@
 import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
+import { DocumentContentLevel, IDocumentContent } from "../types";
 
-export interface IContent {
-  title: string;
-  level: 1 | 2 | 3;
+export interface ContentDocument extends IDocumentContent, MongooseDocument {
   document: mongoose.Types.ObjectId;
   order: number;
-  createdAt: Date;
-  updatedAt: Date;
 }
-
-export interface ContentDocument extends IContent, MongooseDocument {}
 
 const contentSchema = new Schema<ContentDocument>(
   {
@@ -21,8 +16,8 @@ const contentSchema = new Schema<ContentDocument>(
     level: {
       type: Number,
       required: [true, "Уровень раздела обязателен"],
-      enum: [1, 2, 3],
-      default: 1,
+      enum: Object.values(DocumentContentLevel),
+      default: DocumentContentLevel.FIRST,
     },
     document: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,7 +27,7 @@ const contentSchema = new Schema<ContentDocument>(
     order: {
       type: Number,
       required: [true, "Порядок раздела обязателен"],
-      default: 0,
+      default: 1,
     },
   },
   {
@@ -54,24 +49,17 @@ contentSchema.virtual("blocks", {
 // Метод для обновления порядка разделов
 contentSchema.methods["updateOrder"] = function (newOrder: number): void {
   this["order"] = newOrder;
-  this["updatedAt"] = new Date();
 };
 
 // Статический метод для поиска разделов документа
-contentSchema.statics["findByDocument"] = function (
-  documentId: string,
-  options: any = {}
-) {
-  return this.find({ document: documentId })
-    .sort(options.sort || { order: 1, createdAt: 1 })
-    .limit(options.limit || 100)
-    .skip(options.skip || 0);
+contentSchema.statics["findByDocument"] = function (documentId: string) {
+  return this.find({ document: documentId });
 };
 
 // Статический метод для поиска разделов по уровню
 contentSchema.statics["findByLevel"] = function (
   documentId: string,
-  level: 1 | 2 | 3
+  level: DocumentContentLevel
 ) {
   return this.find({ document: documentId, level });
 };

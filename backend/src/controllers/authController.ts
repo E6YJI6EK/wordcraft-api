@@ -52,7 +52,7 @@ export class AuthController {
       token,
       user: {
         id: user._id,
-        name: user.name,
+        name: user.login,
         email: user.email,
         role: user.role,
       },
@@ -83,13 +83,13 @@ export class AuthController {
 
     const userResponse = {
       id: user._id,
-      name: user.name,
+      name: user.login,
       email: user.email,
       role: user.role,
     };
 
-    if (user.avatar) {
-      (userResponse as any).avatar = user.avatar;
+    if (user.avatarUrl) {
+      (userResponse as any).avatar = user.avatarUrl;
     }
     res.cookie("token", token, { httpOnly: true }).json({
       success: true,
@@ -109,11 +109,10 @@ export class AuthController {
       success: true,
       data: {
         id: user!._id,
-        name: user!.name,
+        name: user!.login,
         email: user!.email,
         role: user!.role,
-        avatar: user!.avatar,
-        createdAt: user!.createdAt,
+        avatar: user!.avatarUrl,
       },
     });
   });
@@ -151,10 +150,10 @@ export class AuthController {
         message: "Профиль обновлен успешно.",
         data: {
           id: user!._id,
-          name: user!.name,
+          name: user!.login,
           email: user!.email,
           role: user!.role,
-          avatar: user!.avatar,
+          avatar: user!.avatarUrl,
         },
       });
     }

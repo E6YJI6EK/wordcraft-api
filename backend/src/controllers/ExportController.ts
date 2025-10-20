@@ -4,12 +4,12 @@ import { ConverterService } from "../services/ConverterService";
 import { AuthRequest } from "../types";
 import { catchAsync } from "../utils/errorHandler";
 
-export class GostController {
-  private gostService: ConverterService;
+export class ExportController {
+  private converterService: ConverterService;
   private documentService: DocumentService;
 
   constructor() {
-    this.gostService = new ConverterService();
+    this.converterService = new ConverterService();
     this.documentService = new DocumentService();
   }
 
@@ -26,12 +26,12 @@ export class GostController {
       return;
     }
 
-    const documentWithContents = await this.documentService.getDocumentWithContents(
+    const document = await this.documentService.getDocumentWithContents(
       documentId,
       req.user!._id
     );
 
-    if (!documentWithContents) {
+    if (!document) {
       res.status(404).json({
         success: false,
         message: "Документ не найден.",
@@ -39,8 +39,11 @@ export class GostController {
       return;
     }
 
-    const docxBuffer = await this.gostService.createDocxDocument(documentWithContents);
-    const fileName = `${documentWithContents.title.replace(
+    const docxBuffer = await this.converterService.createDocxDocument(
+      document,
+      document.settings
+    );
+    const fileName = `${document.title.replace(
       /[^a-zA-Z0-9]/g,
       "_"
     )}_${Date.now()}.docx`;

@@ -13,8 +13,14 @@ import {
   VerticalAlign,
   WidthType,
 } from "docx";
-import { FormatSettings } from "../config/formatSettings";
-import { ContentBlockType, IContentBlock, IDocumentContent } from "../types";
+// import { DEFAULT_FORMAT_SETTINGS } from "../config/formatSettings";
+import {
+  ContentBlockType,
+  IContentBlock,
+  IDocumentContent,
+  IDocumentSettings,
+  TextAlignment,
+} from "../types";
 
 export interface IDocumentWithContents {
   title: string;
@@ -22,18 +28,21 @@ export interface IDocumentWithContents {
 }
 
 export enum HeadingLevel {
-  HEADING_1= "Heading1",
-  HEADING_2= "Heading2",
-  HEADING_3= "Heading3",
-  HEADING_4= "Heading4",
-  HEADING_5= "Heading5",
-  HEADING_6= "Heading6",
-  TITLE= "Title",
+  HEADING_1 = "Heading1",
+  HEADING_2 = "Heading2",
+  HEADING_3 = "Heading3",
+  HEADING_4 = "Heading4",
+  HEADING_5 = "Heading5",
+  HEADING_6 = "Heading6",
+  TITLE = "Title",
 }
 
 export class ConverterService {
   // Создание DOCX документа
-  public async createDocxDocument(docData: IDocumentWithContents): Promise<Buffer> {
+  public async createDocxDocument(
+    docData: IDocumentWithContents,
+    DEFAULT_FORMAT_SETTINGS: IDocumentSettings
+  ): Promise<Buffer> {
     try {
       // Создаем массив для хранения всех элементов документа
       const children: any[] = [];
@@ -46,19 +55,19 @@ export class ConverterService {
         switch (content.level) {
           case 1:
             headingLevel = HeadingLevel.HEADING_1;
-            headingSettings = FormatSettings.heading1;
+            headingSettings = DEFAULT_FORMAT_SETTINGS.heading1;
             break;
           case 2:
             headingLevel = HeadingLevel.HEADING_2;
-            headingSettings = FormatSettings.heading2;
+            headingSettings = DEFAULT_FORMAT_SETTINGS.heading2;
             break;
           case 3:
             headingLevel = HeadingLevel.HEADING_3;
-            headingSettings = FormatSettings.heading3;
+            headingSettings = DEFAULT_FORMAT_SETTINGS.heading3;
             break;
           default:
             headingLevel = HeadingLevel.HEADING_1;
-            headingSettings = FormatSettings.heading1;
+            headingSettings = DEFAULT_FORMAT_SETTINGS.heading1;
         }
 
         children.push(
@@ -85,7 +94,11 @@ export class ConverterService {
 
         // Обрабатываем блоки содержимого
         for (const block of content.blocks) {
-          await this.processContentBlock(block, children);
+          await this.processContentBlock(
+            block,
+            children,
+            DEFAULT_FORMAT_SETTINGS
+          );
         }
       }
 
@@ -96,10 +109,10 @@ export class ConverterService {
             properties: {
               page: {
                 margin: {
-                  top: FormatSettings.margins.top,
-                  bottom: FormatSettings.margins.bottom,
-                  left: FormatSettings.margins.left,
-                  right: FormatSettings.margins.right,
+                  top: DEFAULT_FORMAT_SETTINGS.margins.top,
+                  bottom: DEFAULT_FORMAT_SETTINGS.margins.bottom,
+                  left: DEFAULT_FORMAT_SETTINGS.margins.left,
+                  right: DEFAULT_FORMAT_SETTINGS.margins.right,
                 },
               },
             },
@@ -118,11 +131,14 @@ export class ConverterService {
 
   private async processContentBlock(
     block: IContentBlock,
-    children: any[]
+    children: any[],
+    DEFAULT_FORMAT_SETTINGS: IDocumentSettings
   ): Promise<void> {
     switch (block.type) {
       case ContentBlockType.PARAGRAPH:
-        children.push(this.createParagraph(block.data));
+        children.push(
+          this.createParagraph(block.data, DEFAULT_FORMAT_SETTINGS)
+        );
         break;
 
       case ContentBlockType.IMAGE:
@@ -131,32 +147,37 @@ export class ConverterService {
         break;
 
       case ContentBlockType.TABLE:
-        await this.processTable(block.data, children);
+        await this.processTable(block.data, children, DEFAULT_FORMAT_SETTINGS);
         break;
 
       case ContentBlockType.FORMULA:
-        children.push(this.createFormula(block.data));
+        children.push(this.createFormula(block.data, DEFAULT_FORMAT_SETTINGS));
         break;
 
       default:
-        children.push(this.createParagraph(block.data));
+        children.push(
+          this.createParagraph(block.data, DEFAULT_FORMAT_SETTINGS)
+        );
     }
   }
 
-  private createParagraph(text: string): Paragraph {
+  private createParagraph(
+    text: string,
+    DEFAULT_FORMAT_SETTINGS: IDocumentSettings
+  ): Paragraph {
     return new Paragraph({
       alignment:
-        FormatSettings.body.alignment === "justify"
+        DEFAULT_FORMAT_SETTINGS.body.alignment === TextAlignment.JUSTIFY
           ? AlignmentType.JUSTIFIED
           : AlignmentType.LEFT,
       spacing: {
-        line: FormatSettings.body.spacing.line,
+        line: DEFAULT_FORMAT_SETTINGS.body.spacing.line ?? 0,
       },
       children: [
         new TextRun({
           text: text,
-          size: FormatSettings.body.fontSize * 2,
-          font: FormatSettings.body.fontFamily,
+          size: DEFAULT_FORMAT_SETTINGS.body.fontSize * 2,
+          font: DEFAULT_FORMAT_SETTINGS.body.fontFamily,
         }),
       ],
     });
@@ -206,7 +227,8 @@ export class ConverterService {
 
   private async processTable(
     tableData: string,
-    children: any[]
+    children: any[],
+    DEFAULT_FORMAT_SETTINGS: IDocumentSettings
   ): Promise<void> {
     try {
       // Предполагаем, что tableData содержит JSON с данными таблицы
@@ -221,8 +243,8 @@ export class ConverterService {
                 children: [
                   new TextRun({
                     text: String(cell || ""),
-                    size: FormatSettings.body.fontSize * 2,
-                    font: FormatSettings.body.fontFamily,
+                    size: DEFAULT_FORMAT_SETTINGS.body.fontSize * 2,
+                    font: DEFAULT_FORMAT_SETTINGS.body.fontFamily,
                   }),
                 ],
               }),
@@ -288,15 +310,18 @@ export class ConverterService {
     }
   }
 
-  private createFormula(formulaData: string): Paragraph {
+  private createFormula(
+    formulaData: string,
+    DEFAULT_FORMAT_SETTINGS: IDocumentSettings
+  ): Paragraph {
     return new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { before: 100, after: 100 },
       children: [
         new TextRun({
           text: formulaData,
-          size: FormatSettings.body.fontSize * 2,
-          font: FormatSettings.body.fontFamily,
+          size: DEFAULT_FORMAT_SETTINGS.body.fontSize * 2,
+          font: DEFAULT_FORMAT_SETTINGS.body.fontFamily,
           italics: true,
         }),
       ],

@@ -1,4 +1,4 @@
-export const FormatSettings = {
+export const DEFAULT_FORMAT_SETTINGS = {
   title: {
     fontSize: 16,
     fontFamily: "Times New Roman",

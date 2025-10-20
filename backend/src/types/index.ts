@@ -1,16 +1,53 @@
 import { Request } from "express";
-import { Document, Model } from "mongoose";
+import { Document } from "mongoose";
 
 // User types
+export enum UserRole {
+  USER = "user",
+  ADMIN = "admin",
+}
 export interface IUser extends Document {
   email: string;
   password: string;
-  name: string;
-  role: "user" | "admin";
-  avatar?: string;
-  createdAt: Date;
-  lastLogin: Date;
+  login: string;
+  role: UserRole;
+  avatarUrl: string | null;
   comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+export enum TextAlignment {
+  LEFT = "left",
+  CENTER = "center",
+  RIGHT = "right",
+  JUSTIFY = "justify",
+}
+export interface IDocumentFontSettings {
+  fontSize: number;
+  fontFamily: string;
+  bold: boolean;
+  alignment: TextAlignment;
+  spacing: {
+    before?: number;
+    after?: number;
+    line?: number;
+  };
+}
+
+export interface IDocumentMarginsSettings {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
+export interface IDocumentSettings {
+  name: string;
+  title: IDocumentFontSettings;
+  heading1: IDocumentFontSettings;
+  heading2: IDocumentFontSettings;
+  heading3: IDocumentFontSettings;
+  body: IDocumentFontSettings;
+  margins: IDocumentMarginsSettings;
 }
 
 // Document types
@@ -19,6 +56,14 @@ export enum ContentBlockType {
   IMAGE = "image",
   TABLE = "table",
   FORMULA = "formula",
+  ORDERED_LIST = "ordered_list",
+  UNORDERED_LIST = "unordered_list",
+}
+
+export enum DocumentContentLevel {
+  FIRST = 1,
+  SECOND = 2,
+  THIRD = 3,
 }
 
 export interface IContentBlock {
@@ -28,28 +73,19 @@ export interface IContentBlock {
 
 export interface IDocumentContent {
   title: string;
-  level: 1 | 2 | 3;
+  level: DocumentContentLevel;
   blocks: IContentBlock[];
 }
-export interface IDocument extends Document {
+export interface IDocument {
   title: string;
-  metadata: {
-    author?: string;
-    supervisor?: string;
-    department?: string;
-    year?: number;
-    subject?: string;
-    keywords?: string[];
-  };
+  contents: IDocumentContent[];
+  settings: IDocumentSettings;
   originalFile?: {
     filename: string;
     path: string;
     mimetype: string;
     size: number;
   };
-  user: IUser["_id"];
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 // Request types
@@ -91,10 +127,6 @@ export interface PaginatedResponse<T> {
     hasPrev: boolean;
   };
 }
-
-// Model types
-export interface UserModel extends Model<IUser> {}
-export interface DocumentModel extends Model<IDocument> {}
 
 // Environment variables
 export interface EnvVars {

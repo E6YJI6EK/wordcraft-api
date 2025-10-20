@@ -1,11 +1,11 @@
 import express from "express";
 import { z } from "zod";
-import { GostController } from "../controllers/gostController";
+import { ExportController } from "../controllers/ExportController";
 import { protect } from "../middleware/auth";
 import { validateParams } from "../middleware/validation";
 
 const router = express.Router();
-const gostController = new GostController();
+const gostController = new ExportController();
 
 // Схема для параметров ID
 const idParamSchema = z.object({
@@ -16,7 +16,7 @@ const idParamSchema = z.object({
  * @openapi
  * /api/gost/export/{id}:
  *   post:
- *     tags: [GOST]
+ *     tags: [Export]
  *     summary: Экспорт документа в формате DOCX
  *     security:
  *       - bearerAuth: []
