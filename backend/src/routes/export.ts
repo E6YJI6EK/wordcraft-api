@@ -1,11 +1,11 @@
 import express from "express";
 import { z } from "zod";
-import { GostController } from "../controllers/gostController";
+import { ExportController } from "../controllers/exportController";
 import { protect } from "../middleware/auth";
 import { validateParams } from "../middleware/validation";
 
 const router = express.Router();
-const gostController = new GostController();
+const gostController = new ExportController();
 
 // Схема для параметров ID
 const idParamSchema = z.object({

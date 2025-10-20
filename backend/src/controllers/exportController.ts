@@ -4,12 +4,12 @@ import { ConverterService } from "../services/ConverterService";
 import { AuthRequest } from "../types";
 import { catchAsync } from "../utils/errorHandler";
 
-export class GostController {
-  private gostService: ConverterService;
+export class ExportController {
+  private converterService: ConverterService;
   private documentService: DocumentService;
 
   constructor() {
-    this.gostService = new ConverterService();
+    this.converterService = new ConverterService();
     this.documentService = new DocumentService();
   }
 
@@ -39,7 +39,7 @@ export class GostController {
       return;
     }
 
-    const docxBuffer = await this.gostService.createDocxDocument(documentWithContents);
+    const docxBuffer = await this.converterService.createDocxDocument(documentWithContents);
     const fileName = `${documentWithContents.title.replace(
       /[^a-zA-Z0-9]/g,
       "_"

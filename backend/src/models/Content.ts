@@ -1,44 +1,37 @@
-import mongoose, { Schema, Document as MongooseDocument } from "mongoose";
+import mongoose, {
+  Schema,
+  Document as MongooseDocument,
+  Types,
+} from "mongoose";
+import { DocumentLevel, IDocumentContent } from "../types";
 
-export interface IContent {
-  title: string;
-  level: 1 | 2 | 3;
-  document: mongoose.Types.ObjectId;
-  order: number;
-  createdAt: Date;
-  updatedAt: Date;
+export interface ContentDocument extends IDocumentContent, MongooseDocument {
+  document: Types.ObjectId;
 }
 
-export interface ContentDocument extends IContent, MongooseDocument {}
-
-const contentSchema = new Schema<ContentDocument>(
-  {
-    title: {
-      type: String,
-      required: [true, "Название раздела обязательно"],
-      trim: true,
-    },
-    level: {
-      type: Number,
-      required: [true, "Уровень раздела обязателен"],
-      enum: [1, 2, 3],
-      default: 1,
-    },
-    document: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Document",
-      required: [true, "Связь с документом обязательна"],
-    },
-    order: {
-      type: Number,
-      required: [true, "Порядок раздела обязателен"],
-      default: 0,
-    },
+const contentSchema = new Schema<ContentDocument>({
+  title: {
+    type: String,
+    required: [true, "Название раздела обязательно"],
+    trim: true,
   },
-  {
-    timestamps: true,
-  }
-);
+  level: {
+    type: Number,
+    required: [true, "Уровень раздела обязателен"],
+    enum: Object.values(DocumentLevel),
+  },
+  order: {
+    type: Number,
+    required: [true, "Порядок раздела обязателен"],
+    min: 1,
+    default: 1,
+  },
+  document: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Document",
+    required: [true, "Связь с документом обязательна"],
+  },
+});
 
 // Индексы для быстрого поиска
 contentSchema.index({ document: 1, order: 1 });
@@ -54,24 +47,23 @@ contentSchema.virtual("blocks", {
 // Метод для обновления порядка разделов
 contentSchema.methods["updateOrder"] = function (newOrder: number): void {
   this["order"] = newOrder;
-  this["updatedAt"] = new Date();
+};
+
+contentSchema.methods["updateLevel"] = function (
+  newLevel: DocumentLevel
+): void {
+  this["level"] = newLevel;
 };
 
 // Статический метод для поиска разделов документа
-contentSchema.statics["findByDocument"] = function (
-  documentId: string,
-  options: any = {}
-) {
-  return this.find({ document: documentId })
-    .sort(options.sort || { order: 1, createdAt: 1 })
-    .limit(options.limit || 100)
-    .skip(options.skip || 0);
+contentSchema.statics["findByDocument"] = function (documentId: string) {
+  return this.find({ document: documentId }).sort({ order: 1 });
 };
 
 // Статический метод для поиска разделов по уровню
 contentSchema.statics["findByLevel"] = function (
   documentId: string,
-  level: 1 | 2 | 3
+  level: DocumentLevel
 ) {
   return this.find({ document: documentId, level });
 };

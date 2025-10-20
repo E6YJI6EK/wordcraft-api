@@ -10,7 +10,7 @@ import swaggerSpec from './config/swagger'
 // Импорт роутов
 import authRoutes from './routes/auth'
 import documentRoutes from './routes/documents'
-import gostRoutes from './routes/gost'
+import gostRoutes from './routes/export'
 
 // Импорт middleware
 import { errorHandler, notFound } from './utils/errorHandler'

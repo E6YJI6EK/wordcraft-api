@@ -30,6 +30,7 @@ export class DocxParserService {
     let currentContent: IDocumentContent | null = null;
     
     let match;
+    let order = 1;
     while ((match = headingRegex.exec(html)) !== null) {
       // Если есть предыдущий контент, сохраняем его
       if (currentContent) {
@@ -37,7 +38,8 @@ export class DocxParserService {
         if (contentBetween.trim()) {
           currentContent.blocks.push({
             type: ContentBlockType.PARAGRAPH,
-            data: contentBetween.trim()
+            textContent: contentBetween.trim(),
+            order: 1
           });
         }
         contents.push(currentContent);
@@ -53,6 +55,7 @@ export class DocxParserService {
       };
       
       lastIndex = match.index + match[0].length;
+      order++;
     }
     
     // Обрабатываем оставшийся контент после последнего заголовка

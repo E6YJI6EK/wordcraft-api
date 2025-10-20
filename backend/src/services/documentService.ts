@@ -1,7 +1,7 @@
 import fs from "fs";
 import Document from "../models/Document";
 import Content from "../models/Content";
-import Block from "../models/Block";
+import ContentBlock from "../models/ContentBlock";
 import { IDocument, PaginatedResponse } from "../types";
 import { DocxParserService, IDocumentParseResult } from "./DocxParserService";
 
@@ -62,7 +62,7 @@ export class DocumentService {
           const blockData = contentData.blocks[j];
           
           if (blockData) {
-            await Block.create({
+            await ContentBlock.BaseContentBlock.create({
               type: blockData.type,
               data: blockData.data,
               content: content._id,
@@ -98,7 +98,7 @@ export class DocumentService {
     // Получаем блоки для каждого раздела
     const contentsWithBlocks = await Promise.all(
       contents.map(async (content) => {
-        const blocks = await Block.find({ content: content._id })
+        const blocks = await ContentBlock.find({ content: content._id })
           .sort({ order: 1 });
         
         return {
@@ -190,7 +190,7 @@ export class DocumentService {
   ): Promise<IDocument> {
     return await Document.create({
       title: `${originalDoc.title} (копия)`,
-      metadata: originalDoc.metadata,
+      settings: originalDoc.settings,
       user: userId,
     });
   }

@@ -13,7 +13,7 @@ import {
   VerticalAlign,
   WidthType,
 } from "docx";
-import { FormatSettings } from "../config/formatSettings";
+import { DEFAULT_FORMAT_SETTINGS } from "../config/formatSettings";
 import { ContentBlockType, IContentBlock, IDocumentContent } from "../types";
 
 export interface IDocumentWithContents {
@@ -46,19 +46,19 @@ export class ConverterService {
         switch (content.level) {
           case 1:
             headingLevel = HeadingLevel.HEADING_1;
-            headingSettings = FormatSettings.heading1;
+            headingSettings = DEFAULT_FORMAT_SETTINGS.heading1;
             break;
           case 2:
             headingLevel = HeadingLevel.HEADING_2;
-            headingSettings = FormatSettings.heading2;
+            headingSettings = DEFAULT_FORMAT_SETTINGS.heading2;
             break;
           case 3:
             headingLevel = HeadingLevel.HEADING_3;
-            headingSettings = FormatSettings.heading3;
+            headingSettings = DEFAULT_FORMAT_SETTINGS.heading3;
             break;
           default:
             headingLevel = HeadingLevel.HEADING_1;
-            headingSettings = FormatSettings.heading1;
+            headingSettings = DEFAULT_FORMAT_SETTINGS.heading1;
         }
 
         children.push(
@@ -96,10 +96,10 @@ export class ConverterService {
             properties: {
               page: {
                 margin: {
-                  top: FormatSettings.margins.top,
-                  bottom: FormatSettings.margins.bottom,
-                  left: FormatSettings.margins.left,
-                  right: FormatSettings.margins.right,
+                  top: DEFAULT_FORMAT_SETTINGS.margins.top,
+                  bottom: DEFAULT_FORMAT_SETTINGS.margins.bottom,
+                  left: DEFAULT_FORMAT_SETTINGS.margins.left,
+                  right: DEFAULT_FORMAT_SETTINGS.margins.right,
                 },
               },
             },
@@ -146,17 +146,17 @@ export class ConverterService {
   private createParagraph(text: string): Paragraph {
     return new Paragraph({
       alignment:
-        FormatSettings.body.alignment === "justify"
+        DEFAULT_FORMAT_SETTINGS.body.alignment === "justify"
           ? AlignmentType.JUSTIFIED
           : AlignmentType.LEFT,
       spacing: {
-        line: FormatSettings.body.spacing.line,
+        line: DEFAULT_FORMAT_SETTINGS.body.spacing.line,
       },
       children: [
         new TextRun({
           text: text,
-          size: FormatSettings.body.fontSize * 2,
-          font: FormatSettings.body.fontFamily,
+          size: DEFAULT_FORMAT_SETTINGS.body.fontSize * 2,
+          font: DEFAULT_FORMAT_SETTINGS.body.fontFamily,
         }),
       ],
     });
@@ -221,8 +221,8 @@ export class ConverterService {
                 children: [
                   new TextRun({
                     text: String(cell || ""),
-                    size: FormatSettings.body.fontSize * 2,
-                    font: FormatSettings.body.fontFamily,
+                    size: DEFAULT_FORMAT_SETTINGS.body.fontSize * 2,
+                    font: DEFAULT_FORMAT_SETTINGS.body.fontFamily,
                   }),
                 ],
               }),
@@ -295,8 +295,8 @@ export class ConverterService {
       children: [
         new TextRun({
           text: formulaData,
-          size: FormatSettings.body.fontSize * 2,
-          font: FormatSettings.body.fontFamily,
+          size: DEFAULT_FORMAT_SETTINGS.body.fontSize * 2,
+          font: DEFAULT_FORMAT_SETTINGS.body.fontFamily,
           italics: true,
         }),
       ],
