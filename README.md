@@ -1,4 +1,7 @@
 # 📝 Wordcraft API
+  
+#### Mongo Express - http://localhost:8081/db/wordcraft-db/
+#### Документация в Swagger - http://localhost:3000/api-docs/
 
 ## 📦 Установка и запуск
 
