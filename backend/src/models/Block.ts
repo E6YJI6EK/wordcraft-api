@@ -61,6 +61,6 @@ blockSchema.statics["findByType"] = function (
   return this.find({ content: contentId, type });
 };
 
-const Block = mongoose.model<BlockDocument>("Block", blockSchema);
+const Block = mongoose.model<BlockDocument>("Block", blockSchema, "Blocks");
 
 export default Block;

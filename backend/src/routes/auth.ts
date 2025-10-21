@@ -20,7 +20,7 @@ const authController = new AuthController();
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               login:
  *                 type: string
  *                 minLength: 2
  *                 maxLength: 50

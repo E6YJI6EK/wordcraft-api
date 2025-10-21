@@ -58,6 +58,6 @@ userSchema.methods['comparePassword'] = async function(candidatePassword: string
 userSchema.index({ email: 1 });
 userSchema.index({ createdAt: -1 });
 
-const User = mongoose.model<UserDocument>('User', userSchema);
+const User = mongoose.model<UserDocument>('User', userSchema, 'Users');
 
 export default User; 

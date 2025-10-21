@@ -179,5 +179,6 @@ const DocumentSettingsSchema = new Schema<IDocumentSettingsDocument>(
 
 export const DocumentSettings = mongoose.model<IDocumentSettingsDocument>(
   "DocumentSettings",
-  DocumentSettingsSchema
+  DocumentSettingsSchema,
+  'DocumentSettings'
 );

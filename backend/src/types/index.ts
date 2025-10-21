@@ -93,6 +93,13 @@ export interface AuthRequest extends Request {
   user?: IUser;
 }
 
+export interface UploadFileRequest extends Request {
+  user?: IUser;
+  body: {
+    documentSettingsId: string;
+  };
+}
+
 // Response types
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -102,6 +109,7 @@ export interface ApiResponse<T = any> {
 }
 
 export interface AuthResponse {
+  ocumentSettingsId?: string;
   success: boolean;
   message: string;
   token?: string;

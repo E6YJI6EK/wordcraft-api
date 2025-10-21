@@ -1,28 +1,26 @@
-// Скрипт инициализации MongoDB для ГОСТ Document Formatter
-db = db.getSiblingDB('gost-formatter');
-
+// Скрипт инициализации MongoDB 
+// ВАЖНО!!1 ЭТОТ ФАЙЛ ДОЛЖЕН ВСЕГДА
+// ГЕНЕРИРОВАТЬСЯ НА СЕРВЕРЕ
+// ЕГО НЕ ДОЛЖНО БЫТЬ В РЕПОЗИТОРИИ
+db = db.getSiblingDB("wordcraft-db");
 // Создаем пользователя для приложения
 db.createUser({
-  user: 'gost_user',
-  pwd: 'gost_password',
+  user: "wordcraft_user",
+  pwd: "wordcraft_password",
   roles: [
     {
-      role: 'readWrite',
-      db: 'gost-formatter'
-    }
-  ]
+      role: "readWrite",
+      db: "wordcraft-db",
+    },
+  ],
 });
 
-// Создаем коллекции
-db.createCollection('users');
-db.createCollection('documents');
+db.createCollection("config");
+db.config.insertOne({
+  app_name: "WordcraftDB",
+  version: "1.0.0",
+  initialized: true,
+  created_at: new Date(),
+});
 
-// Создаем индексы для оптимизации
-db.users.createIndex({ "email": 1 }, { unique: true });
-db.documents.createIndex({ "user": 1, "createdAt": -1 });
-db.documents.createIndex({ "title": "text", "metadata.subject": "text" });
-
-print('✅ MongoDB инициализирована для ГОСТ Document Formatter');
-print('📊 База данных: gost-formatter');
-print('👤 Пользователь: gost_user');
-print('🔗 Подключение: mongodb://gost_user:gost_password@localhost:27017/gost-formatter'); 
+print("✅ MongoDB инициализирована для Wordcraft API");

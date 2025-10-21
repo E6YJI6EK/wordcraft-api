@@ -63,6 +63,6 @@ documentSchema.statics["findByUser"] = function (userId: string) {
   return this.find({ user: userId });
 };
 
-const Document = mongoose.model<DocumentDocument>("Document", documentSchema);
+const Document = mongoose.model<DocumentDocument>("Document", documentSchema, "Documents");
 
 export default Document;

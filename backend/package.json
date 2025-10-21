@@ -1,11 +1,12 @@
 {
-  "name": "gost-document-formatter-backend",
+  "name": "wordcraft-api",
   "version": "1.0.0",
   "description": "Backend для приложения форматирования документов по ГОСТу",
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
+    "db:seed": "npx tsx src/seed.ts",
     "build": "tsc",
     "watch": "tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -31,6 +32,7 @@
     "multer": "^1.4.5-lts.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "tsx": "^4.20.6",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -44,7 +46,6 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.0.1",
-    "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }
 }

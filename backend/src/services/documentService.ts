@@ -19,7 +19,7 @@ interface PaginationOptions {
 
 interface FileUploadData {
   file: Express.Multer.File;
-  title: string;
+  documentSettingsId: string;
   userId: string;
 }
 
@@ -41,13 +41,14 @@ export class DocumentService {
 
     // Создаем документ
     const document = await Document.create({
-      title: data.title || parseResult.title,
+      title: parseResult.title,
       originalFile: {
         filename: data.file.originalname,
         path: data.file.path,
         mimetype: data.file.mimetype,
         size: data.file.size,
       },
+      documentSettings: data.documentSettingsId,
       user: data.userId,
     });
 

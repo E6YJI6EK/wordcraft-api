@@ -16,7 +16,7 @@ const contentSchema = new Schema<ContentDocument>(
     level: {
       type: Number,
       required: [true, "Уровень раздела обязателен"],
-      enum: Object.values(DocumentContentLevel),
+      enum: [1,2,3],
       default: DocumentContentLevel.FIRST,
     },
     document: {
@@ -64,6 +64,6 @@ contentSchema.statics["findByLevel"] = function (
   return this.find({ document: documentId, level });
 };
 
-const Content = mongoose.model<ContentDocument>("Content", contentSchema);
+const Content = mongoose.model<ContentDocument>("Content", contentSchema, "Contents");
 
 export default Content;

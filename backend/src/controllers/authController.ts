@@ -28,7 +28,7 @@ export class AuthController {
   // @desc    Регистрация нового пользователя
   // @access  Public
   register = catchAsync(async (req: Request, res: Response<AuthResponse>) => {
-    const { name, email, password } = req.body;
+    const { login, email, password } = req.body;
 
     // Проверяем, существует ли пользователь
     const existingUser = await this.authService.findUserByEmail(email);
@@ -41,7 +41,7 @@ export class AuthController {
     }
 
     // Создаем нового пользователя
-    const user = await this.authService.createUser({ name, email, password });
+    const user = await this.authService.createUser({ login, email, password });
 
     // Генерируем токен
     const token = this.generateToken(user._id);

@@ -1,5 +1,5 @@
-import { IUser } from '../types';
-import User from '../models/User';
+import { IUser } from "../types";
+import User from "../models/User";
 
 export class AuthService {
   // Поиск пользователя по email
@@ -8,7 +8,10 @@ export class AuthService {
   }
 
   // Поиск пользователя по email, исключая определенный ID
-  async findUserByEmailExcludingId(email: string, userId: string): Promise<IUser | null> {
+  async findUserByEmailExcludingId(
+    email: string,
+    userId: string
+  ): Promise<IUser | null> {
     return await User.findOne({ email, _id: { $ne: userId } });
   }
 
@@ -18,14 +21,21 @@ export class AuthService {
   }
 
   // Создание нового пользователя
-  async createUser(userData: { name: string; email: string; password: string }): Promise<IUser> {
+  async createUser(userData: {
+    login: string;
+    email: string;
+    password: string;
+  }): Promise<IUser> {
     return await User.create(userData);
   }
 
   // Аутентификация пользователя
-  async authenticateUser(email: string, password: string): Promise<IUser | null> {
-    const user = await User.findOne({ email }).select('+password');
-    
+  async authenticateUser(
+    email: string,
+    password: string
+  ): Promise<IUser | null> {
+    const user = await User.findOne({ email }).select("+password");
+
     if (!user) {
       return null;
     }
@@ -44,12 +54,14 @@ export class AuthService {
   }
 
   // Обновление пользователя
-  async updateUser(userId: string, updateData: Partial<IUser>): Promise<IUser | null> {
-    return await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true, runValidators: true }
-    );
+  async updateUser(
+    userId: string,
+    updateData: Partial<IUser>
+  ): Promise<IUser | null> {
+    return await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      runValidators: true,
+    });
   }
 
   // Удаление пользователя
@@ -58,23 +70,29 @@ export class AuthService {
   }
 
   // Получение всех пользователей (для админов)
-  async getAllUsers(page: number = 1, limit: number = 10): Promise<{ users: IUser[]; total: number }> {
+  async getAllUsers(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ users: IUser[]; total: number }> {
     const skip = (page - 1) * limit;
-    
+
     const [users, total] = await Promise.all([
-      User.find().skip(skip).limit(limit).select('-password'),
-      User.countDocuments()
+      User.find().skip(skip).limit(limit).select("-password"),
+      User.countDocuments(),
     ]);
 
     return { users, total };
   }
 
   // Изменение роли пользователя (для админов)
-  async changeUserRole(userId: string, role: 'user' | 'admin'): Promise<IUser | null> {
+  async changeUserRole(
+    userId: string,
+    role: "user" | "admin"
+  ): Promise<IUser | null> {
     return await User.findByIdAndUpdate(
       userId,
       { role },
       { new: true, runValidators: true }
     );
   }
-} 
+}
