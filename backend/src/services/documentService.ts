@@ -8,8 +8,10 @@ import {
   PaginatedResponse,
   ContentBlockType,
   IDocumentSettings,
+  PaginationData,
 } from "../types";
 import { DocxParserService, IDocumentParseResult } from "./DocxParserService";
+import { QueryParams, SortDirection } from "../shared/query";
 
 interface PaginationOptions {
   page: number;
@@ -150,24 +152,38 @@ export class DocumentService {
   }
 
   // Получение документов с пагинацией
-  async getDocumentsWithPagination(
-    query: any,
-    options: PaginationOptions
+  async getDocumentsByUser(
+    queryParams: QueryParams<"createdAt", "type">,
+    userId: string
   ): Promise<{
     documents: IDocument[];
-    pagination: PaginatedResponse<any>["pagination"];
+    pagination: PaginationData;
   }> {
-    const { page, limit, sort } = options;
-    const skip = (page - 1) * limit;
+    const { page, limit, sortDirection, sortBy, filterBy, query } = queryParams;
+    const skip = page * limit;
+    const payload: Record<string, unknown> = { user: userId };
 
-    const [documents, total] = await Promise.all([
-      Document.find(query)
-        .sort(sort)
-        .limit(limit)
-        .skip(skip)
-        .populate("user", "name email"),
-      Document.countDocuments(query),
-    ]);
+    if (filterBy) {
+      for (const key in filterBy) {
+        payload[key] = filterBy[key as "type"];
+      }
+    }
+
+    if (query) {
+      payload["title"] = {
+        $regex: query,
+        $options: "i",
+      };
+    }
+
+    const documents = sortBy
+      ? await Document.find(payload)
+          .sort({ [sortBy]: sortDirection === SortDirection.ASC ? 1 : -1 })
+          .limit(limit)
+          .skip(skip)
+      : await Document.find(payload).limit(limit).skip(skip);
+
+    const total = await Document.countDocuments();
 
     const totalPages = Math.ceil(total / limit);
 
@@ -218,24 +234,6 @@ export class DocumentService {
       title: `${originalDoc.title} (копия)`,
       user: userId,
     });
-  }
-
-  // Поиск документов
-  async searchDocuments(
-    userId: string,
-    searchTerm: string,
-    options: PaginationOptions
-  ): Promise<{
-    documents: IDocument[];
-    pagination: PaginatedResponse<any>["pagination"];
-  }> {
-    const query: any = { user: userId };
-
-    if (searchTerm) {
-      query.$text = { $search: searchTerm };
-    }
-
-    return await this.getDocumentsWithPagination(query, options);
   }
 
   // Получение статистики документов пользователя

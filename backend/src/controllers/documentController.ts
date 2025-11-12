@@ -3,6 +3,8 @@ import { DocumentService } from "../services/documentService";
 import {
   ApiResponse,
   AuthRequest,
+  GetDocumentsRequest,
+  IDocument,
   PaginatedResponse,
   UploadFileRequest,
 } from "../types";
@@ -18,26 +20,17 @@ export class DocumentController {
   // @route   GET /api/documents
   // @desc    Получение всех документов пользователя
   // @access  Private
-  getDocuments = catchAsync(
-    async (req: AuthRequest, res: Response<PaginatedResponse<any>>) => {
-      const { page, limit, search, sortBy, sortOrder } = req.query;
+  getDocumentsByUser = catchAsync(
+    async (
+      req: GetDocumentsRequest,
+      res: Response<PaginatedResponse<IDocument>>
+    ) => {
+      const queryParams = req.body;
+      const userId = req.params.userId;
 
-      const query: any = { user: req.user!._id };
-
-      if (search) {
-        query.$text = { $search: search };
-      }
-
-      const sortOptions: any = {};
-      sortOptions[sortBy as string] = sortOrder === "asc" ? 1 : -1;
-
-      const result = await this.documentService.getDocumentsWithPagination(
-        query,
-        {
-          page: Number(page) || 1,
-          limit: Number(limit) || 10,
-          sort: sortOptions,
-        }
+      const result = await this.documentService.getDocumentsByUser(
+        queryParams,
+        userId
       );
 
       res.json({

@@ -1,21 +1,21 @@
 import express from "express";
+import fs from "fs";
+import mongoose from "mongoose";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
+import { z } from "zod";
+import { DocumentController } from "../controllers/documentController";
 import { protect } from "../middleware/auth";
 import {
+  validate,
   validateBody,
-  validateQuery,
   validateParams,
 } from "../middleware/validation";
 import {
   createDocumentSchema,
+  queryDocumentsSchema,
   updateDocumentSchema,
-  documentQuerySchema,
 } from "../validations";
-import { DocumentController } from "../controllers/documentController";
-import { z } from "zod";
-import mongoose from "mongoose";
 
 const router = express.Router();
 const documentController = new DocumentController();
@@ -76,42 +76,34 @@ const idParamSchema = z.object({
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: query
+ *       - in: body
  *         name: page
  *         schema:
  *           type: integer
  *           minimum: 1
  *           default: 1
- *       - in: query
+ *       - in: body
  *         name: limit
  *         schema:
  *           type: integer
  *           minimum: 1
- *           maximum: 100
  *           default: 10
- *       - in: query
- *         name: search
+ *       - in: body
+ *         name: query
  *         schema:
  *           type: string
- *           maxLength: 100
- *       - in: query
- *         name: type
+ *       - in: body
+ *         name: filterBy
  *         schema:
- *           type: string
- *           enum: [coursework, thesis, report, essay]
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [draft, in_progress, completed]
- *       - in: query
+ *           type: object
+ *       - in: body
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [createdAt, updatedAt, title]
+ *           enum: [createdAt]
  *           default: createdAt
- *       - in: query
- *         name: sortOrder
+ *       - in: body
+ *         name: sortDirection
  *         schema:
  *           type: string
  *           enum: [asc, desc]
@@ -123,10 +115,10 @@ const idParamSchema = z.object({
 // @desc    Получение всех документов пользователя
 // @access  Private
 router.get(
-  "/",
+  "/:userId",
   protect,
-  validateQuery(documentQuerySchema),
-  documentController.getDocuments
+  validate(queryDocumentsSchema),
+  documentController.getDocumentsByUser
 );
 
 /**

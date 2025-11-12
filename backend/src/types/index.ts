@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { Document } from "mongoose";
+import { QueryParams } from "../shared/query";
 
 // User types
 export enum UserRole {
@@ -93,6 +94,13 @@ export interface AuthRequest extends Request {
   user?: IUser;
 }
 
+export interface GetDocumentsRequest extends Request {
+  params: {
+    userId: string;
+  };
+  body: QueryParams<"createdAt", "type">;
+}
+
 export interface UploadFileRequest extends Request {
   user?: IUser;
   body: {
@@ -109,7 +117,6 @@ export interface ApiResponse<T = any> {
 }
 
 export interface AuthResponse {
-  ocumentSettingsId?: string;
   success: boolean;
   message: string;
   token?: string;
@@ -123,17 +130,19 @@ export interface AuthResponse {
 }
 
 // Pagination response type
+export interface PaginationData {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 export interface PaginatedResponse<T> {
   success: boolean;
   data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
+  pagination: PaginationData;
 }
 
 // Environment variables

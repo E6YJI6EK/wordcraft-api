@@ -1,4 +1,10 @@
 import { z } from "zod";
+export {
+  queryDocumentsSchema,
+  updateDocumentSchema,
+  createDocumentSchema,
+  gostFormatSchema,
+} from "./documents";
 
 // Auth validations
 export const registerSchema = z.object({
@@ -45,69 +51,6 @@ export const updateProfileSchema = z.object({
     .trim()
     .optional(),
 });
-
-// Document validations
-export const createDocumentSchema = z.object({});
-
-export const updateDocumentSchema = createDocumentSchema.partial();
-
-export const documentQuerySchema = z.object({
-  page: z
-    .string()
-    .transform((val) => parseInt(val, 10))
-    .pipe(z.number().min(1, "Номер страницы должен быть не менее 1"))
-    .optional()
-    .default("1"),
-  limit: z
-    .string()
-    .transform((val) => parseInt(val, 10))
-    .pipe(
-      z
-        .number()
-        .min(1, "Лимит должен быть не менее 1")
-        .max(100, "Лимит не должен превышать 100")
-    )
-    .optional()
-    .default("10"),
-  search: z.string().max(100).optional(),
-  type: z.enum(["coursework", "thesis", "report", "essay"]).optional(),
-  status: z.enum(["draft", "in_progress", "completed"]).optional(),
-  sortBy: z
-    .enum(["createdAt", "updatedAt", "title"])
-    .optional()
-    .default("createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
-});
-
-// GOST formatting validations
-export const gostFormatSchema = z.object({
-  documentId: z.string().min(1, "ID документа обязателен"),
-  format: z
-    .enum(["gost-7.32-2017", "gost-7.1-2003", "gost-2.105-95"], {
-      errorMap: () => ({
-        message:
-          "Формат ГОСТ должен быть одним из: gost-7.32-2017, gost-7.1-2003, gost-2.105-95",
-      }),
-    })
-    .optional(),
-  customSettings: z
-    .object({
-      fontSize: z.number().min(8).max(72).optional(),
-      lineSpacing: z.number().min(1).max(3).optional(),
-      margins: z
-        .object({
-          top: z.number().min(10).max(50).optional(),
-          bottom: z.number().min(10).max(50).optional(),
-          left: z.number().min(20).max(50).optional(),
-          right: z.number().min(10).max(30).optional(),
-        })
-        .optional(),
-      fontFamily: z.string().optional(),
-    })
-    .optional(),
-});
-
-
 
 // Pagination response type
 export interface PaginatedResponse<T> {
