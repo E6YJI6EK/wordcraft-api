@@ -110,7 +110,7 @@ export class DocumentService {
     }[];
     settings: IDocumentSettings;
   } | null> {
-    const document = await Document.findOne({ _id: documentId, user: userId });
+    const document = await Document.findOne({ _id: documentId, user: userId }).populate('documentSettings');
     if (!document) {
       return null;
     }
@@ -137,11 +137,12 @@ export class DocumentService {
         };
       })
     );
+console.log(document);
 
     const res = {
       title: document.title,
       contents: contentsWithBlocks,
-      settings: document.settings,
+      settings: document.documentSettings,
     };
     return res;
   }

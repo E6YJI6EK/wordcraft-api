@@ -38,7 +38,7 @@ export class ExportController {
       });
       return;
     }
-
+    // res.json(document);
     const docxBuffer = await this.converterService.createDocxDocument(
       document,
       document.settings
